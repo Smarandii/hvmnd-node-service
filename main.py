@@ -2,13 +2,15 @@ from flask import Flask, request, jsonify
 import subprocess
 import random
 import string
+import pathlib
 
 app = Flask(__name__)
 
 # Simple authentication token for demonstration purposes
 # In production, use a more secure method for authentication
 AUTH_TOKEN = "YourSecretToken"
-PATH_TO_ANY_DESK = "AnyDesk.exe"
+PATH_TO_ANY_DESK = r"C:\Program Files (x86)\AnyDesk\AnyDesk.exe"
+PATH_TO_ANY_DESK = pathlib.Path(PATH_TO_ANY_DESK)
 
 
 def generate_password(length=12):
