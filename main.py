@@ -13,6 +13,7 @@ PATH_TO_ANY_DESK = r"C:\Program Files (x86)\AnyDesk\AnyDesk.exe"
 PATH_TO_PW_FILE = r"C:\Program Files (x86)\AnyDesk\file.txt"
 PATH_TO_ANY_DESK = pathlib.Path(PATH_TO_ANY_DESK)
 PATH_TO_PW_FILE = pathlib.Path(PATH_TO_PW_FILE)
+TASK_NAME = "UpdateAnyDeskPassword"
 
 
 def generate_password(length=12):
@@ -33,7 +34,7 @@ def update_password():
         pwd_file.write(new_password)
 
     # Trigger the scheduled task
-    command = ['schtasks', '/run', '/tn', "UpdateAnyDeskPassword"]
+    command = ['schtasks', '/run', '/tn', TASK_NAME]
     try:
         subprocess.run(command, check=True)
         return jsonify({"new_password": new_password})
