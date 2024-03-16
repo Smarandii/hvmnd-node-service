@@ -1,0 +1,28 @@
+from flask import Flask, request, jsonify
+import subprocess
+from .utils import generate_password
+from .config import AUTH_TOKEN, PATH_TO_PW_FILE
+from .db_operations import save_or_update_ngrok_url
+import ngrok
+
+app = Flask(__name__)
+
+
+@app.route('/update_password', methods=['POST'])
+def update_password():
+    auth_token = request.headers.get('Authorization')
+    if auth_token != AUTH_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 401
+    new_password = generate_password()
+    with open(PATH_TO_PW_FILE, "w") as pwd_file:
+        pwd_file.write(new_password)
+    try:
+        command = ["powershell.exe", "-ExecutionPolicy", "Unrestricted", "-File", "update_password.ps1"]
+        process = subprocess.run(command, capture_output=True, text=True)
+        if process.returncode == 0:
+            return jsonify({"new_password": new_password})
+        else:
+            return jsonify({"error": "Failed to update password", "details": process.stderr}), 500
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": "Failed to update password", "details": str(e)}), 500
+
