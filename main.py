@@ -35,32 +35,13 @@ def update_password():
     with open(PATH_TO_PW_FILE, "w") as pwd_file:
         pwd_file.write(new_password)
 
-    # Trigger the scheduled task
-    command = (
-        f'$newPassword = Get-Content "{PATH_TO_PW_FILE}"'
-        'echo $newPassword | anydesk --set-password;'
-        'Start-Sleep -Seconds 1;'
-        '$serviceName="AnyDesk";'
-        'if((Get-Service -Name $serviceName).Status -eq "Running")'
-        '{Restart-Service -Name $serviceName;}'
-    )
-
     try:
-        p = subprocess.Popen(
-            [
-                "powershell.exe",
-                "-noprofile", "-c",
-                r"""
-                Start-Process -Verb RunAs -Wait powershell.exe -Args "
-                  -noprofile -c Set-Location \`"$PWD\`"; & update_password.ps1
-                  "
-                """
-            ],
-            stdout=sys.stdout
-        )
-        p.communicate()
-
-        return jsonify({"new_password": new_password, "return_code": p.returncode})
+        command = ["powershell.exe", "-ExecutionPolicy", "Unrestricted", "-File", "update_password.ps1"]
+        process = subprocess.run(command, capture_output=True, text=True)
+        if process.returncode == 0:
+            return jsonify({"new_password": new_password, "return_code": process.returncode})
+        else:
+            return jsonify({"error": "Failed to update password", "details": process.stderr}), 500
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
 
