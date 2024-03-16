@@ -60,7 +60,7 @@ def update_password():
         )
         p.communicate()
 
-        return jsonify({"new_password": new_password})
+        return jsonify({"new_password": new_password, "return_code": p.returncode})
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
 
