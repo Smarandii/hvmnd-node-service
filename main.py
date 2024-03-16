@@ -10,7 +10,7 @@ app = Flask(__name__)
 # In production, use a more secure method for authentication
 AUTH_TOKEN = "YourSecretToken"
 PATH_TO_ANY_DESK = r"C:\Program Files (x86)\AnyDesk\AnyDesk.exe"
-PATH_TO_PW_FILE = r"file.txt"
+PATH_TO_PW_FILE = r"C:\Program Files (x86)\AnyDesk\file.txt"
 PATH_TO_ANY_DESK = pathlib.Path(PATH_TO_ANY_DESK)
 PATH_TO_PW_FILE = pathlib.Path(PATH_TO_PW_FILE)
 TASK_NAME = "UpdateAnyDeskPassword"
