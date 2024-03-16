@@ -44,7 +44,7 @@ def update_password():
     )
     try:
         output = subprocess.check_output(['powershell', command], stderr=subprocess.STDOUT)
-        return jsonify({"new_password": new_password, "output": output})
+        return jsonify({"new_password": new_password})
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
 
