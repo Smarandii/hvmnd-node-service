@@ -37,14 +37,13 @@ def update_password():
     command = (
         f'$newPassword = Get-Content "{PATH_TO_PW_FILE}"'
         'echo $newPassword | anydesk --set-password;'
-        '>> Start-Sleep -Seconds 1;'
-        '>> $serviceName="AnyDesk";'
-        '>> if((Get-Service -Name $serviceName).Status -eq "Running")'
-        '>> {Restart-Service -Name $serviceName;}'
+        'Start-Sleep -Seconds 1;'
+        '$serviceName="AnyDesk";'
+        'if((Get-Service -Name $serviceName).Status -eq "Running")'
+        '{Restart-Service -Name $serviceName;}'
     )
     try:
         output = subprocess.check_output(['powershell', command], stderr=subprocess.STDOUT)
-        output = output.decode('utf-8').strip()
         return jsonify({"new_password": new_password, "output": output})
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
