@@ -1,3 +1,5 @@
+import sys
+
 from flask import Flask, request, jsonify
 import subprocess
 import random
@@ -42,8 +44,22 @@ def update_password():
         'if((Get-Service -Name $serviceName).Status -eq "Running")'
         '{Restart-Service -Name $serviceName;}'
     )
+
     try:
-        output = subprocess.check_output(['powershell', command], stderr=subprocess.STDOUT)
+        p = subprocess.Popen(
+            [
+                "powershell.exe",
+                "-noprofile", "-c",
+                r"""
+                Start-Process -Verb RunAs -Wait powershell.exe -Args "
+                  -noprofile -c Set-Location \`"$PWD\`"; & update_password.ps1
+                  "
+                """
+            ],
+            stdout=sys.stdout
+        )
+        p.communicate()
+
         return jsonify({"new_password": new_password})
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
