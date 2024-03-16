@@ -4,9 +4,11 @@ import random
 import psutil
 import GPUtil
 
+
 def generate_password(length=12):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for i in range(length))
+
 
 def get_system_info():
     machine_name = socket.gethostname()

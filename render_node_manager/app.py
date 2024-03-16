@@ -2,8 +2,6 @@ from flask import Flask, request, jsonify
 import subprocess
 from .utils import generate_password
 from .config import AUTH_TOKEN, PATH_TO_PW_FILE
-from .db_operations import save_or_update_ngrok_url
-import ngrok
 
 app = Flask(__name__)
 
