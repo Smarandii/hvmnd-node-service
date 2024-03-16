@@ -19,7 +19,6 @@ PATH_TO_ANY_DESK = r"C:\Program Files (x86)\AnyDesk\AnyDesk.exe"
 PATH_TO_PW_FILE = r"C:\Program Files (x86)\AnyDesk\file.txt"
 PATH_TO_ANY_DESK = pathlib.Path(PATH_TO_ANY_DESK)
 PATH_TO_PW_FILE = pathlib.Path(PATH_TO_PW_FILE)
-TASK_NAME = "UpdateAnyDeskPassword"
 os.environ['NGROK_AUTHTOKEN'] = '2ETJzIGCEuQ8aJaGWju3nA4sswz_6xeXM7qFqhNvBXCAL8pKZ'
 MONGO_URI = "mongodb+srv://admin:WIyniFnVBpcbG1pJ@cluster0.aaaafpm.mongodb.net/?retryWrites=true&w=majority"
 
