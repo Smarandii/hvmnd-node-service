@@ -3,3 +3,5 @@ ngrok~=1.2.0
 pymongo
 psutil
 gputil
+pyuac
+pypiwin32
