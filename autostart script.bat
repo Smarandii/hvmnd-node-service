@@ -1,5 +1,5 @@
 @echo off
-SET projectDir="E:\Projects\render_hive_farm_bot_node_service"
+SET projectDir="C:\Program Files (x86)\render_hive_farm_bot_node_service"
 SET venvDir=%projectDir%\venv
 
 cd %projectDir%
