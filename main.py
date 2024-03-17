@@ -1,3 +1,4 @@
+# coding=utf-8
 import ngrok
 from render_node_manager.app import app
 from render_node_manager.db_operations import save_or_update_ngrok_url
