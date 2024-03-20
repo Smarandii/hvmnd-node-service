@@ -46,7 +46,16 @@ else:
 
 # Step 6: Setup NSSM service
 print("Setting up NSSM service...")
-subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
-subprocess.check_call([NSSM_EXE_PATH, 'start', 'render-node-service'])
+
+try:
+    subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
+except Exception as e:
+    print("render-node-service already installed")
+
+try:
+    subprocess.check_call([NSSM_EXE_PATH, 'start', 'render-node-service'])
+except Exception as e:
+    print("render-node-service already started")
+
 
 print("Setup completed successfully.")
