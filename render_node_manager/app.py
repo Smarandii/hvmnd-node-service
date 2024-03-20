@@ -24,3 +24,23 @@ def update_password():
     except subprocess.CalledProcessError as e:
         return jsonify({"error": "Failed to update password", "details": str(e)}), 500
 
+
+@app.route('/restart_node', methods=['POST'])
+def restart_node():
+    auth_token = request.headers.get('Authorization')
+    if auth_token != AUTH_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        command = ["powershell.exe", "-Command", "Restart-Computer -Force"]
+        process = subprocess.run(command)
+        if process.returncode == 0:
+            return jsonify({"restarted": True}), 200
+        else:
+            return jsonify({"error": "Failed to restart node", "details": process.stderr}), 500
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": "Failed to restart node", "details": str(e)}), 500
+
+
+@app.route('/liveliness', methods=['GET'])
+def liveliness():
+    return jsonify({"alive": True}), 200
