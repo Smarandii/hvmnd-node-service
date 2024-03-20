@@ -41,7 +41,6 @@ NSSM_EXE_PATH = os.path.join(ROOT_DIR, 'nssm-2.24', 'win64', 'nssm.exe')  # Adju
 
 # Step 6: Setup NSSM service
 print("Setting up NSSM service...")
-subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service'])
 subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
 subprocess.check_call([NSSM_EXE_PATH, 'start', 'render-node-service'])
 
