@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import subprocess
 from .utils import generate_password
-from .config import AUTH_TOKEN, PATH_TO_PW_FILE
+from .config import AUTH_TOKEN, PATH_TO_PW_FILE, UPDATE_PW_POWERSHELL_COMMAND
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ def update_password():
     with open(PATH_TO_PW_FILE, "w") as pwd_file:
         pwd_file.write(new_password)
     try:
-        command = ["powershell.exe", "-ExecutionPolicy", "Unrestricted", "-File", "update_password.ps1"]
+        command = ["powershell.exe", "-ExecutionPolicy", "Unrestricted", "-Command", UPDATE_PW_POWERSHELL_COMMAND]
         process = subprocess.run(command, capture_output=True, text=True)
         if process.returncode == 0:
             return jsonify({"new_password": new_password})
