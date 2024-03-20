@@ -28,16 +28,21 @@ subprocess.check_call([PYTHON_EXE, '-m', 'pip', 'install', '-r', REQUIREMENTS_PA
 
 # Step 4: Download NSSM
 print("Downloading NSSM...")
-urllib.request.urlretrieve(NSSM_ZIP_URL, NSSM_ZIP_PATH)
+if not os.path.exists(NSSM_ZIP_PATH):
+    urllib.request.urlretrieve(NSSM_ZIP_URL, NSSM_ZIP_PATH)
+else:
+    print(f"NSSM already downloaded {NSSM_ZIP_PATH}")
+
+NSSM_EXE_PATH = os.path.join(ROOT_DIR, 'nssm-2.24', 'win64', 'nssm.exe')  # Adjust based on NSSM's zip structure
 
 # Step 5: Unzip NSSM
 print("Unzipping NSSM...")
-with zipfile.ZipFile(NSSM_ZIP_PATH, 'r') as zip_ref:
-    zip_ref.extractall(NSSM_EXTRACT_DIR)
+if not os.path.exists(NSSM_EXE_PATH):
+    with zipfile.ZipFile(NSSM_ZIP_PATH, 'r') as zip_ref:
+        zip_ref.extractall(NSSM_EXTRACT_DIR)
+else:
+    print(f"NSSM already unzipped and ready to use {NSSM_EXE_PATH}")
 
-# The extracted directory name will depend on the NSSM version and structure of the zip file
-# Adjust this path as necessary based on the actual contents of the NSSM zip file
-NSSM_EXE_PATH = os.path.join(ROOT_DIR, 'nssm-2.24', 'win64', 'nssm.exe')  # Adjust based on NSSM's zip structure
 
 # Step 6: Setup NSSM service
 print("Setting up NSSM service...")
