@@ -3,3 +3,6 @@
 venv
 *.log
 *.tmp*
+build
+dist
+main.spec
