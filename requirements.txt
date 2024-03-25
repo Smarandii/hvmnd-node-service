@@ -1,5 +1,6 @@
 flask~=3.0.2
 ngrok~=1.2.0
+requirements
 pymongo
 psutil
 gputil
