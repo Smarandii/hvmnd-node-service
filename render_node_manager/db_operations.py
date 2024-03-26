@@ -11,7 +11,7 @@ def save_or_update_ngrok_url(url):
     machine_id = socket.gethostname()
     system_info = get_system_info()
     collection.update_one({"machine_id": machine_id},
-                          {"$set": {"update_password_webhook": url, **system_info}},
+                          {"$set": {"status": "available", "update_password_webhook": url, **system_info}},
                           upsert=True)
     client.close()
     print("Ngrok url updated")
