@@ -1,15 +1,10 @@
 import pathlib
-import os
 
-# Configuration settings
-AUTH_TOKEN = "YourSecretToken!;%:?*()_+"
 PATH_TO_ANY_DESK = pathlib.Path(r"C:\Program Files (x86)\AnyDesk\AnyDesk.exe")
 PATH_TO_PW_FILE = pathlib.Path(r"C:\Program Files (x86)\AnyDesk\file.txt")
-NGROK_AUTH_TOKEN = '2ETJzIGCEuQ8aJaGWju3nA4sswz_6xeXM7qFqhNvBXCAL8pKZ'
 MONGO_URI = "mongodb+srv://admin:WIyniFnVBpcbG1pJ@cluster0.aaaafpm.mongodb.net/?retryWrites=true&w=majority"
-
-os.environ['NGROK_AUTHTOKEN'] = NGROK_AUTH_TOKEN
-
+token = "6524183208:AAHXOGhNtuQ1mHis-3J9_tsd01ZI0CTIX60"
+chat_id = "231584958"
 UPDATE_PW_POWERSHELL_COMMAND = f"""
 $newPassword = Get-Content "{PATH_TO_PW_FILE}"
 echo $newPassword | anydesk --set-password;

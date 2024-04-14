@@ -3,6 +3,7 @@ import string
 import random
 import psutil
 import GPUtil
+import requests
 
 
 def generate_password(length=12):
@@ -19,3 +20,13 @@ def get_system_info():
     if gpus:
         gpu = ", ".join([gpu.name for gpu in gpus])
     return {"machine_name": machine_name, "cpu": cpu, "gpu": gpu}
+
+
+def send_telegram_message(token, chat_id, message):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    data = {
+        "chat_id": chat_id,
+        "text": message,
+    }
+    response = requests.post(url, params=data)
+    return response.json()
