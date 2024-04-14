@@ -2,7 +2,7 @@ import time
 import socket
 import pymongo
 import subprocess
-from .config import MONGO_URI
+from .config import MONGO_URI, bot_token
 from .utils import generate_password
 from render_node_manager.config import token, chat_id
 from render_node_manager.utils import send_telegram_message
@@ -40,16 +40,22 @@ class DBOperations:
                 if old_status is None or node["status"] != old_status:
                     if node['status'] == 'need_to_update_password':
                         new_password = generate_password()
-                        password = self.__update_any_desk_password(new_password)
+                        self.__update_any_desk_password(new_password)
                         if node['renter'] is not None:
                             self.collection.update_one(
                                 {"machine_id": self.machine_id},
-                                {"$set": {"any_desk_password": password, "status": "occupied"}}
+                                {"$set": {"any_desk_password": new_password, "status": "occupied"}}
+                            )
+                            send_telegram_message(
+                                token=bot_token,
+                                chat_id=node['renter'],
+                                message=f"AnyDesk адрес: `{node['any_desk_address']}`\n"
+                                        f"AnyDesk пароль: `{node['any_desk_password']}`"
                             )
                         else:
                             self.collection.update_one(
                                 {"machine_id": self.machine_id},
-                                {"$set": {"any_desk_password": password, "status": "available"}}
+                                {"$set": {"any_desk_password": new_password, "status": "available"}}
                             )
                     if node['status'] == 'restarting':
                         self.__restart_node()
