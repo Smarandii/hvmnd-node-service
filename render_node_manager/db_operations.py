@@ -49,8 +49,8 @@ class DBOperations:
                             send_telegram_message(
                                 token=bot_token,
                                 chat_id=node['renter'],
-                                message=f"AnyDesk адрес: `{node['any_desk_address']}`\n"
-                                        f"AnyDesk пароль: `{node['any_desk_password']}`"
+                                message=f"AnyDesk адрес: {node['any_desk_address']}\n"
+                                        f"AnyDesk пароль: {new_password}"
                             )
                         else:
                             self.collection.update_one(
