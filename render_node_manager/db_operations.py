@@ -3,7 +3,7 @@ import socket
 import pymongo
 import subprocess
 from .config import MONGO_URI
-from .utils import get_system_info, generate_password
+from .utils import generate_password
 from render_node_manager.config import token, chat_id
 from render_node_manager.utils import send_telegram_message
 from .config import PATH_TO_PW_FILE, UPDATE_PW_POWERSHELL_COMMAND
@@ -17,45 +17,49 @@ class DBOperations:
         self.machine_id = socket.gethostname()
 
     def startup_node(self):
-        system_info = get_system_info()
         new_password = generate_password()
         self.__update_any_desk_password(new_password)
-        self.collection.update_one({"machine_id": self.machine_id},
-                                   {"$set": {
-                                       "any_desk_password": new_password,
-                                       "status": "available",
-                                       **system_info
-                                   }},
-                                   upsert=True)
+        self.collection.update_one(
+            {"machine_id": self.machine_id},
+            {
+                "$set":
+                    {
+                        "any_desk_password": new_password,
+                        "status": "available"
+                    }
+            },
+            upsert=True
+        )
         send_telegram_message(token=token, chat_id=chat_id, message=str(f"{socket.gethostname()} Node available"))
 
     def poll_node_status(self):
+        old_status = None
         while True:
             try:
                 node = self.collection.find_one({"machine_id": self.machine_id})
-                old_status = node['status']
-                if node['status'] == 'need_to_update_password':
-                    new_password = generate_password()
-                    password = self.__update_any_desk_password(new_password)
-                    if node['renter'] is not None:
-                        self.collection.update_one(
-                            {"machine_id": self.machine_id},
-                            {"$set": {"any_desk_password": password, "status": "occupied"}}
-                        )
-                    else:
-                        self.collection.update_one(
-                            {"machine_id": self.machine_id},
-                            {"$set": {"any_desk_password": password, "status": "available"}}
-                        )
-                if node['status'] == 'restarting':
-                    self.__restart_node()
+                if old_status is None or node["status"] != old_status:
+                    if node['status'] == 'need_to_update_password':
+                        new_password = generate_password()
+                        password = self.__update_any_desk_password(new_password)
+                        if node['renter'] is not None:
+                            self.collection.update_one(
+                                {"machine_id": self.machine_id},
+                                {"$set": {"any_desk_password": password, "status": "occupied"}}
+                            )
+                        else:
+                            self.collection.update_one(
+                                {"machine_id": self.machine_id},
+                                {"$set": {"any_desk_password": password, "status": "available"}}
+                            )
+                    if node['status'] == 'restarting':
+                        self.__restart_node()
 
-                log_message = f"Node {node['old_id']} shifted from {old_status} to {node['status']}"
-                print(log_message)
-                send_telegram_message(token=token, chat_id=chat_id, message=log_message)
-                time.sleep(5)
+                    log_message = f"Node {node['old_id']} shifted from {old_status} to {node['status']}"
+                    print(log_message)
+                    old_status = node['status']
+                    time.sleep(5)
             except Exception as e:
-                send_telegram_message(token=token, chat_id=chat_id, message=str(e))
+                send_telegram_message(token=token, chat_id=chat_id, message=str(e.args))
                 time.sleep(5)
 
     def __update_any_desk_password(self, new_password: str):
