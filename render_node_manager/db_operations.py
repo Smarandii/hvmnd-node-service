@@ -61,6 +61,7 @@ class DBOperations:
             except Exception as e:
                 send_telegram_message(token=token, chat_id=chat_id, message=str(e.args))
                 time.sleep(5)
+            time.sleep(5)
 
     def __update_any_desk_password(self, new_password: str):
         with open(PATH_TO_PW_FILE, "w") as pwd_file:
