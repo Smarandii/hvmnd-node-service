@@ -1,7 +1,7 @@
-import pymongo
+import time
 import socket
+import pymongo
 import subprocess
-from time import sleep
 from .config import MONGO_URI
 from .utils import get_system_info, generate_password
 from render_node_manager.config import token, chat_id
@@ -31,28 +31,32 @@ class DBOperations:
 
     def poll_node_status(self):
         while True:
-            node = self.collection.find_one({"machine_id": self.machine_id})
-            old_status = node['status']
-            if node['status'] == 'need_to_update_password':
-                new_password = generate_password()
-                password = self.__update_any_desk_password(new_password)
-                if node['renter'] is not None:
-                    self.collection.update_one(
-                        {"machine_id": self.machine_id},
-                        {"$set": {"any_desk_password": password, "status": "occupied"}}
-                    )
-                else:
-                    self.collection.update_one(
-                        {"machine_id": self.machine_id},
-                        {"$set": {"any_desk_password": password, "status": "available"}}
-                    )
-            if node['status'] == 'restarting':
-                self.__restart_node()
+            try:
+                node = self.collection.find_one({"machine_id": self.machine_id})
+                old_status = node['status']
+                if node['status'] == 'need_to_update_password':
+                    new_password = generate_password()
+                    password = self.__update_any_desk_password(new_password)
+                    if node['renter'] is not None:
+                        self.collection.update_one(
+                            {"machine_id": self.machine_id},
+                            {"$set": {"any_desk_password": password, "status": "occupied"}}
+                        )
+                    else:
+                        self.collection.update_one(
+                            {"machine_id": self.machine_id},
+                            {"$set": {"any_desk_password": password, "status": "available"}}
+                        )
+                if node['status'] == 'restarting':
+                    self.__restart_node()
 
-            log_message = f"Node {node['old_id']} shifted from {old_status} to {node['status']}"
-            print(log_message)
-            send_telegram_message(token=token, chat_id=chat_id, message=log_message)
-            sleep(5)
+                log_message = f"Node {node['old_id']} shifted from {old_status} to {node['status']}"
+                print(log_message)
+                send_telegram_message(token=token, chat_id=chat_id, message=log_message)
+                time.sleep(5)
+            except Exception as e:
+                send_telegram_message(token=token, chat_id=chat_id, message=str(e))
+                time.sleep(5)
 
     def __update_any_desk_password(self, new_password: str):
         with open(PATH_TO_PW_FILE, "w") as pwd_file:
