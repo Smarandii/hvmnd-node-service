@@ -79,8 +79,10 @@ class DBOperations:
             if process.returncode == 0:
                 return new_password
             else:
+                send_telegram_message(token=token, chat_id=chat_id, message=str({"error": "Failed to update password", "details": process.stderr}))
                 return {"error": "Failed to update password", "details": process.stderr}
         except subprocess.CalledProcessError as e:
+            send_telegram_message(token=token, chat_id=chat_id, message=str({"error": "Failed to update password", "details": str(e)}))
             return {"error": "Failed to update password", "details": str(e)}
 
     def __restart_node(self):
@@ -90,8 +92,10 @@ class DBOperations:
             if process.returncode == 0:
                 return {"restarted": True}
             else:
+                send_telegram_message(token=token, chat_id=chat_id, message=str({"error": "Failed to restart node", "details": process.stderr}))
                 return {"error": "Failed to restart node", "details": process.stderr}
         except subprocess.CalledProcessError as e:
+            send_telegram_message(token=token, chat_id=chat_id, message=str({"error": "Failed to restart node", "details": str(e)}))
             return {"error": "Failed to restart node", "details": str(e)}
 
     def __del__(self):
