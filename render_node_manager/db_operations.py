@@ -15,6 +15,7 @@ class DBOperations:
         self.db = self.client["new_database"]
         self.collection = self.db["nodes"]
         self.machine_id = socket.gethostname()
+        send_telegram_message(token=token, chat_id=chat_id, message=str(f"{socket.gethostname()} Node initialized"))
 
     def startup_node(self):
         new_password = generate_password()
