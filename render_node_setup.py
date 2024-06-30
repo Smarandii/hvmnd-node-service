@@ -17,7 +17,7 @@ NSSM_EXTRACT_DIR = ROOT_DIR
 # Step 1: Create virtual environment
 print("Creating virtual environment...")
 try:
-    subprocess.check_call(['py', '-m', 'venv', 'venv'])
+    subprocess.check_call([PYTHON_EXE, '-m', 'venv', 'venv'])
 except subprocess.CalledProcessError:
     print("Virtual environment already exists")
 
