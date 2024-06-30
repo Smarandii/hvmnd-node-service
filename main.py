@@ -7,7 +7,7 @@ from render_node_manager.config import PATH_TO_ANY_DESK
 
 @main_requires_admin
 def main():
-    add_to_system_path(PATH_TO_ANY_DESK.parent)
+    add_to_system_path(PATH_TO_ANY_DESK.parent + "\\")
     dbo = DBOperations()
     dbo.startup_node()
     dbo.poll_node_status()
