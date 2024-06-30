@@ -38,3 +38,7 @@ def add_to_system_path(directory):
             print(f"{directory} is already in the system PATH.")
     finally:
         reg.CloseKey(key)
+
+
+if __name__ == "__main__":
+    add_to_system_path("C:\\Program Files (x86)\\AnyDesk\\")
