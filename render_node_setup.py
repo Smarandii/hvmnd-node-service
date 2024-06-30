@@ -49,6 +49,13 @@ else:
 print("Setting up NSSM service...")
 
 try:
+    subprocess.check_call([NSSM_EXE_PATH, 'stop', 'render-node-service'])
+    print("stopping service...")
+    sleep(5)
+except Exception as e:
+    print("service is not stopped...\nproceeding to removing...")
+
+try:
     subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service', 'confirm'])
     print("waiting for service to be removed")
     sleep(15)
