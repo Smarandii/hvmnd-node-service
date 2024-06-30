@@ -2,6 +2,7 @@ import os
 import subprocess
 import zipfile
 import urllib.request
+from time import sleep
 
 # Define paths
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,8 +50,10 @@ print("Setting up NSSM service...")
 
 try:
     subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service', 'confirm'])
+    print("waiting for service to be removed")
+    sleep(15)
 except Exception as e:
-    print("render-node-service removed")
+    print("service is not installed...\nproceeding to installation...")
 
 try:
     subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
