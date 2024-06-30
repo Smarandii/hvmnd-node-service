@@ -48,6 +48,11 @@ else:
 print("Setting up NSSM service...")
 
 try:
+    subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service', 'confirm'])
+except Exception as e:
+    print("render-node-service removed")
+
+try:
     subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
 except Exception as e:
     print("render-node-service already installed")
