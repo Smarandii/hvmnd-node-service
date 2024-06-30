@@ -30,7 +30,7 @@ class DBOperations:
             },
             upsert=True
         )
-        send_telegram_message(token=token, chat_id=chat_id, message=str(f"{socket.gethostname()} Node available"))
+        send_telegram_message(token=token, chat_id=chat_id, message=str(f"{socket.gethostname()} Node available - {new_password}"))
 
     def poll_node_status(self):
         old_status = None
