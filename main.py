@@ -1,4 +1,6 @@
 # coding=utf-8
+import asyncio
+
 from pyuac import main_requires_admin
 from render_node_manager.db_operations import DBOperations
 from render_node_manager.utils import add_to_system_path
@@ -8,8 +10,8 @@ from render_node_manager.utils import add_to_system_path
 def main():
     add_to_system_path("C:\\Program Files (x86)\\AnyDesk\\")
     dbo = DBOperations()
-    dbo.startup_node()
-    dbo.poll_node_status()
+    asyncio.run(dbo.startup_node())
+    asyncio.run(dbo.poll_node_status())
 
 
 if __name__ == '__main__':
