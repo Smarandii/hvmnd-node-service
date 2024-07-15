@@ -24,7 +24,8 @@ class DBOperations:
             SET any_desk_password = EXCLUDED.any_desk_password, status = EXCLUDED.status
         ''', self.machine_id, new_password, 'available')
         await conn.close()
-        send_telegram_message(token=token, chat_id=chat_id, message=str(f"{socket.gethostname()} Node available - {new_password}"))
+        send_telegram_message(token=token, chat_id=chat_id,
+                              message=str(f"{socket.gethostname()} Node available - {new_password}"))
 
     async def poll_node_status(self):
         old_status = None
@@ -41,19 +42,31 @@ class DBOperations:
                             await self.__update_any_desk_password(new_password)
                             if node['renter'] is not None:
                                 conn = await asyncpg.connect(self.db_uri)
-                                await conn.execute('''
-                                    UPDATE nodes
-                                    SET any_desk_password = $1, status = $2
-                                    WHERE machine_id = $3
-                                ''', new_password, 'occupied', self.machine_id)
-                                await conn.close()
 
-                                send_telegram_message(
-                                    token=bot_token,
-                                    chat_id=node['renter'],
-                                    message=f"AnyDesk адрес: {node['any_desk_address']}\n"
-                                            f"AnyDesk пароль: {new_password}"
-                                )
+                                # Fetch the user information
+                                user = await conn.fetchrow('''
+                                                                SELECT telegram_id FROM users WHERE id = $1
+                                                            ''', node['renter'])
+
+                                if user:
+                                    telegram_id = user['telegram_id']
+
+                                    # Update the node information
+                                    await conn.execute('''
+                                                                    UPDATE nodes
+                                                                    SET any_desk_password = $1, status = $2
+                                                                    WHERE machine_id = $3
+                                                                ''', new_password, 'occupied', self.machine_id)
+
+                                    # Send message to the user
+                                    send_telegram_message(
+                                        token=bot_token,
+                                        chat_id=telegram_id,
+                                        message=f"AnyDesk адрес: {node['any_desk_address']}\n"
+                                                f"AnyDesk пароль: {new_password}"
+                                    )
+
+                                await conn.close()
                             else:
                                 conn = await asyncpg.connect(self.db_uri)
                                 await conn.execute('''
@@ -101,11 +114,3 @@ class DBOperations:
         except subprocess.CalledProcessError as e:
             send_telegram_message(token=token, chat_id=chat_id, message=str({"error": "Failed to restart node", "details": str(e)}))
             return {"error": "Failed to restart node", "details": str(e)}
-
-    def __del__(self):
-        pass  # No need to explicitly close connections, asyncpg handles it
-
-# Usage example (make sure to run in an async context)
-# db_operations = DBOperations()
-# asyncio.run(db_operations.startup_node())
-# asyncio.run(db_operations.poll_node_status())
