@@ -9,12 +9,15 @@ def generate_password(length=12):
     return ''.join(random.choice(characters) for _ in range(length))
 
 
-def send_telegram_message(token, chat_id, message):
+def send_telegram_message(token, chat_id, message, parse_mode=None):
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     data = {
         "chat_id": chat_id,
         "text": message,
     }
+    if parse_mode:
+        data["parse_mode"] = parse_mode
+
     response = requests.post(url, params=data)
     return response.json()
 

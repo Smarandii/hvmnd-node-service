@@ -63,7 +63,8 @@ class DBOperations:
                                         token=bot_token,
                                         chat_id=telegram_id,
                                         message=f"AnyDesk адрес: `{node['any_desk_address']}`\n"
-                                                f"AnyDesk пароль: `{new_password}`"
+                                                f"AnyDesk пароль: `{new_password}`",
+                                        parse_mode='MarkdownV2'
                                     )
 
                                 await conn.close()
