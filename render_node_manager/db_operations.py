@@ -62,8 +62,8 @@ class DBOperations:
                                     send_telegram_message(
                                         token=bot_token,
                                         chat_id=telegram_id,
-                                        message=f"AnyDesk адрес: {node['any_desk_address']}\n"
-                                                f"AnyDesk пароль: {new_password}"
+                                        message=f"AnyDesk адрес: `{node['any_desk_address']}`\n"
+                                                f"AnyDesk пароль: `{new_password}`"
                                     )
 
                                 await conn.close()
