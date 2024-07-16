@@ -3,3 +3,4 @@ pyuac==0.0.3
 pywin32==306
 requests==2.31.0
 asyncpg
+loguru
