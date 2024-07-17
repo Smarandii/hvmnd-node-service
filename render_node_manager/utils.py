@@ -2,6 +2,7 @@ import string
 import random
 import requests
 import winreg as reg
+from render_node_manager import logger
 
 
 def generate_password(length=12):
@@ -10,6 +11,7 @@ def generate_password(length=12):
 
 
 def send_telegram_message(token, chat_id, message, parse_mode=None):
+    logger.info(f"Sending: {message} to {chat_id}. Parse_mode {parse_mode}")
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     data = {
         "chat_id": chat_id,

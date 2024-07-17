@@ -2,8 +2,7 @@ import time
 import socket
 import asyncpg
 import subprocess
-from datetime import datetime
-from loguru import logger
+from render_node_manager import logger
 from .config import PG_URL, bot_token, token, chat_id, PATH_TO_PW_FILE, UPDATE_PW_POWERSHELL_COMMAND
 from .utils import generate_password
 from render_node_manager.utils import send_telegram_message
@@ -17,8 +16,7 @@ class DBOperations:
         send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node initialized")
 
     async def startup_node(self):
-        new_password = generate_password()
-        await self.__update_any_desk_password(new_password)
+        new_password = await self.__update_any_desk_password()
         await self.__execute_db_query('''
             INSERT INTO nodes (machine_id, any_desk_password, status)
             VALUES ($1, $2, $3)
@@ -26,12 +24,14 @@ class DBOperations:
             SET any_desk_password = EXCLUDED.any_desk_password, status = EXCLUDED.status
         ''', self.machine_id, new_password, 'available')
         send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node available - {new_password}")
+        logger.info(f"{self.machine_id} Node available - {new_password}")
 
     async def poll_node_status(self):
         old_status = None
         while True:
             try:
                 node = await self.__fetch_db_row('SELECT * FROM nodes WHERE machine_id = $1', self.machine_id)
+                logger.info(f"old_status: {old_status} | node['status']= {node["status"]}")
                 if node and (old_status is None or node["status"] != old_status):
                     await self.__handle_node_status_change(node, old_status)
                     old_status = node['status']
@@ -50,8 +50,7 @@ class DBOperations:
         logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
 
     async def __update_password_and_notify_user(self, node):
-        new_password = generate_password()
-        await self.__update_any_desk_password(new_password)
+        new_password = await self.__update_any_desk_password()
         if node['renter']:
             user = await self.__fetch_db_row('SELECT telegram_id FROM users WHERE id = $1', node['renter'])
             if user:
@@ -59,6 +58,7 @@ class DBOperations:
                 await self.__execute_db_query('''
                     UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
                 ''', new_password, 'occupied', self.machine_id)
+
                 send_telegram_message(
                     token=bot_token,
                     chat_id=telegram_id,
@@ -70,7 +70,9 @@ class DBOperations:
                 UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
             ''', new_password, 'available', self.machine_id)
 
-    async def __update_any_desk_password(self, new_password: str):
+    async def __update_any_desk_password(self):
+        new_password = generate_password()
+        logger.info(f"new_password: {new_password}")
         with open(PATH_TO_PW_FILE, "w") as pwd_file:
             pwd_file.write(new_password)
         try:
@@ -80,6 +82,8 @@ class DBOperations:
                 error_msg = f"Failed to update password: {process.stderr}"
                 logger.error(error_msg)
                 send_telegram_message(token=token, chat_id=chat_id, message=error_msg)
+                return ''
+            return new_password
         except subprocess.CalledProcessError as e:
             error_msg = f"Failed to update password: {e}"
             logger.error(error_msg)
