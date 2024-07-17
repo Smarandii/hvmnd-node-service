@@ -31,7 +31,7 @@ class DBOperations:
         while True:
             try:
                 node = await self.__fetch_db_row('SELECT * FROM nodes WHERE machine_id = $1', self.machine_id)
-                logger.info(f"old_status: {old_status} | node['status']= {node["status"]}")
+                logger.info(f"old_status: {old_status} | node['status']= {node['status']}")
                 if node and (old_status is None or node["status"] != old_status):
                     await self.__handle_node_status_change(node, old_status)
                     old_status = node['status']
