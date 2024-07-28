@@ -7,7 +7,7 @@ from render_node_manager.utils import add_to_system_path
 
 @main_requires_admin
 def main():
-    add_to_system_path("E:\\ProgramFiles(x86)\\AnyDesk")
+    add_to_system_path("C:\\Program Files (x86)\\AnyDesk")
     dbo = DBOperations()
 
     asyncio.run(dbo.startup_node())
