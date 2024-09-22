@@ -16,15 +16,17 @@ class DBOperations:
         send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node initialized")
 
     async def startup_node(self):
-        new_password = await self.__update_any_desk_password()
-        await self.__execute_db_query('''
-            INSERT INTO nodes (machine_id, any_desk_password, status)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (machine_id) DO UPDATE
-            SET any_desk_password = EXCLUDED.any_desk_password, status = EXCLUDED.status
-        ''', self.machine_id, new_password, 'available')
-        send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node available - {new_password}")
-        logger.info(f"{self.machine_id} Node available - {new_password}")
+        node = await self.__fetch_db_row('SELECT * FROM nodes WHERE machine_id = $1', self.machine_id)
+        if not node['renter']:
+            new_password = await self.__update_any_desk_password()
+            await self.__execute_db_query('''
+                INSERT INTO nodes (machine_id, any_desk_password, status)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (machine_id) DO UPDATE
+                SET any_desk_password = EXCLUDED.any_desk_password, status = EXCLUDED.status
+            ''', self.machine_id, new_password, 'available')
+            send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node available - {new_password}")
+            logger.info(f"{self.machine_id} Node available - {new_password}")
 
     async def poll_node_status(self):
         old_status = None
