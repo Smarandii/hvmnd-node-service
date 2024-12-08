@@ -54,7 +54,7 @@ class DBOperations:
     async def __update_password_and_notify_user(self, node):
         new_password = await self.__update_any_desk_password()
         if node['renter']:
-            user = await self.__fetch_db_row('SELECT id FROM users WHERE id = $1', node['renter'])
+            user = await self.__fetch_db_row('SELECT telegram_id FROM users WHERE id = $1', node['renter'])
             if user:
                 telegram_id = user['telegram_id']
                 await self.__execute_db_query('''
