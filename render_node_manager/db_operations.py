@@ -2,10 +2,17 @@ import time
 import socket
 import asyncpg
 import subprocess
-from render_node_manager import logger
-from .config import PG_URL, bot_token, token, chat_id, PATH_TO_PW_FILE, UPDATE_PW_POWERSHELL_COMMAND
 from .utils import generate_password
+from render_node_manager import logger
 from render_node_manager.utils import send_telegram_message
+from .config import (
+    PG_URL,
+    FRONTEND_BOT_TOKEN,
+    ALERT_BOT_TOKEN,
+    ADMIN_CHAT_ID,
+    PATH_TO_PW_FILE,
+    UPDATE_PW_POWERSHELL_COMMAND
+)
 
 
 class DBOperations:
@@ -13,7 +20,15 @@ class DBOperations:
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
         logger.info(f"{self.machine_id} Node initialized")
-        send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node initialized")
+        send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
+
+    def _log(self, alert_message, log_message, log_level):
+        send_telegram_message(
+            token=ALERT_BOT_TOKEN,
+            chat_id=ADMIN_CHAT_ID,
+            message=alert_message
+        )
+        log_level(log_message)
 
     async def startup_node(self):
         node = await self.__fetch_db_row('SELECT * FROM nodes WHERE machine_id = $1', self.machine_id)
@@ -25,8 +40,12 @@ class DBOperations:
                 ON CONFLICT (machine_id) DO UPDATE
                 SET any_desk_password = EXCLUDED.any_desk_password, status = EXCLUDED.status
             ''', self.machine_id, new_password, 'available')
-            send_telegram_message(token=token, chat_id=chat_id, message=f"{self.machine_id} Node available - {new_password}")
-            logger.info(f"{self.machine_id} Node available - {new_password}")
+
+            self._log(
+                alert_message=f"{node['old_id']} {node['id']} {node['any_desk_address']} {self.machine_id} Node is available - {new_password}",
+                log_message=f"{node['old_id']} {node['id']} {node['any_desk_address']} {self.machine_id} Node is available...",
+                log_level=logger.info
+            )
 
     async def poll_node_status(self):
         old_status = None
@@ -40,7 +59,7 @@ class DBOperations:
                 time.sleep(5)
             except Exception as e:
                 logger.error(f"Error in poll_node_status: {e}")
-                send_telegram_message(token=token, chat_id=chat_id, message=str(e))
+                send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=str(e))
                 time.sleep(5)
 
     async def __handle_node_status_change(self, node, old_status):
@@ -61,12 +80,19 @@ class DBOperations:
                     UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
                 ''', new_password, 'occupied', self.machine_id)
 
-                send_telegram_message(
-                    token=bot_token,
-                    chat_id=telegram_id,
-                    message=f"AnyDesk адрес: `{node['any_desk_address']}`\nAnyDesk пароль: `{new_password}`",
-                    parse_mode='MarkdownV2'
-                )
+                await self.__execute_db_query('''
+                    INSERT INTO notifications (user_id, notification_text, notification_platform)
+                    VALUES ($1, $2, 'web_app'), ($1, $3, 'telegram')
+                ''', node['renter'],
+                      f"Node awaits you.\nAnyDesk address: {node['any_desk_address']}\nAnyDesk password: {new_password}",
+                      f"AnyDesk адрес: `{node['any_desk_address']}`\nAnyDesk пароль: `{new_password}`")
+
+                # send_telegram_message(
+                #     token=FRONTEND_BOT_TOKEN,
+                #     chat_id=telegram_id,
+                #     message=f"AnyDesk адрес: `{node['any_desk_address']}`\nAnyDesk пароль: `{new_password}`",
+                #     parse_mode='MarkdownV2'
+                # )
         else:
             await self.__execute_db_query('''
                 UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
@@ -74,7 +100,6 @@ class DBOperations:
 
     async def __update_any_desk_password(self):
         new_password = generate_password()
-        logger.info(f"new_password: {new_password}")
         with open(PATH_TO_PW_FILE, "w") as pwd_file:
             pwd_file.write(new_password)
         try:
@@ -82,14 +107,12 @@ class DBOperations:
             process = subprocess.run(command, capture_output=True, text=True)
             if process.returncode != 0:
                 error_msg = f"Failed to update password: {process.stderr}"
-                logger.error(error_msg)
-                send_telegram_message(token=token, chat_id=chat_id, message=error_msg)
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
                 return ''
             return new_password
         except subprocess.CalledProcessError as e:
             error_msg = f"Failed to update password: {e}"
-            logger.error(error_msg)
-            send_telegram_message(token=token, chat_id=chat_id, message=error_msg)
+            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.info)
 
     async def __restart_node(self):
         try:
@@ -97,12 +120,10 @@ class DBOperations:
             process = subprocess.run(command)
             if process.returncode != 0:
                 error_msg = f"Failed to restart node: {process.stderr}"
-                logger.error(error_msg)
-                send_telegram_message(token=token, chat_id=chat_id, message=error_msg)
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
         except subprocess.CalledProcessError as e:
             error_msg = f"Failed to restart node: {e}"
-            logger.error(error_msg)
-            send_telegram_message(token=token, chat_id=chat_id, message=error_msg)
+            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
     async def __execute_db_query(self, query, *params):
         conn = await asyncpg.connect(self.db_uri)
