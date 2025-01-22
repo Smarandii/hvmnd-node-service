@@ -141,7 +141,7 @@ class DBOperations:
             process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             # Allow the batch file to run while keeping the service responsive
-            stdout, stderr = process.communicate(timeout=300)  # Adjust timeout as needed
+            stdout, stderr = process.communicate(timeout=30)  # Adjust timeout as needed
 
             # Log the result
             if process.returncode == 0:
