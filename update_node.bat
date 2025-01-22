@@ -4,10 +4,17 @@ setlocal
 :: Define log file
 set LOGFILE=update_node.log
 
-nssm stop render-node-service >> update_node.log 2>&1 || echo Failed to stop service! >> "%LOGFILE%" && exit /b 1
-
 :: Start logging
 echo Updating service... > "%LOGFILE%"
+
+
+:: Stop the Windows service
+echo Stopping render-node-service... >> "%LOGFILE%"
+sc stop render-node-service >> "%LOGFILE%" 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to stop service! >> "%LOGFILE%"
+    exit /b 1
+)
 
 :: Pull latest code
 echo Pulling latest code... >> "%LOGFILE%"
