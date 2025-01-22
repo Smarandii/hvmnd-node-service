@@ -125,38 +125,53 @@ class DBOperations:
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
     async def __update_node_service(self):
-    try:
-        # Determine the project root directory
-        current_dir = pathlib.Path(__file__).parent
-        project_root = current_dir.parent
+        try:
+            # Determine the project root directory
+            current_dir = pathlib.Path(__file__).parent
+            project_root = current_dir.parent
 
-        # Ensure the batch file exists in the project root
-        batch_file = project_root / "update_node.bat"
-        log_file = project_root / "update_node.log"
+            # Ensure the batch file exists in the project root
+            batch_file = project_root / "update_node.bat"
+            log_file = project_root / "update_node.log"
 
-        if not batch_file.exists():
-            error_msg = f"Batch file not found: {batch_file}"
+            if not batch_file.exists():
+                error_msg = f"Batch file not found: {batch_file}"
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+                return
+
+            # Run the batch file
+            command = ["cmd.exe", "/c", str(batch_file)]
+            process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = process.communicate(timeout=40)  # Wait for 5 minutes
+            if process.returncode == 0:
+                success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
+                self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
+            else:
+                error_msg = (
+                    f"Failed to update node service. "
+                    f"Error code: {process.returncode}\n"
+                    f"STDOUT: {stdout.decode('cp866')}\n"
+                    f"STDERR: {stderr.decode('cp866')}"
+                )
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+
+                # If an error occurred, send the log file via Telegram
+                if log_file.exists():
+                    with open(log_file, "r", encoding="utf-8") as f:
+                        log_content = f.read()
+
+                    truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
+                    send_telegram_message(
+                        token=ALERT_BOT_TOKEN,
+                        chat_id=ADMIN_CHAT_ID,
+                        message=f"Node update failed. Log file content:\n{truncated_log}"
+                    )
+        except subprocess.TimeoutExpired:
+            error_msg = "Node service update timed out."
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
-            return
 
-        # Run the batch file
-        command = ["cmd.exe", "/c", str(batch_file)]
-        process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        stdout, stderr = process.communicate(timeout=40)  # Wait for 5 minutes
-        if process.returncode == 0:
-            success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
-            self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
-        else:
-            error_msg = (
-                f"Failed to update node service. "
-                f"Error code: {process.returncode}\n"
-                f"STDOUT: {stdout.decode('cp866')}\n"
-                f"STDERR: {stderr.decode('cp866')}"
-            )
-            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
-
-            # If an error occurred, send the log file via Telegram
+            # Send the log file if available
             if log_file.exists():
                 with open(log_file, "r", encoding="utf-8") as f:
                     log_content = f.read()
@@ -165,38 +180,23 @@ class DBOperations:
                 send_telegram_message(
                     token=ALERT_BOT_TOKEN,
                     chat_id=ADMIN_CHAT_ID,
-                    message=f"Node update failed. Log file content:\n{truncated_log}"
+                    message=f"Node update timed out. Log file content:\n{truncated_log}"
                 )
-    except subprocess.TimeoutExpired:
-        error_msg = "Node service update timed out."
-        self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+        except Exception as e:
+            error_msg = f"Exception occurred while updating node service: {e}"
+            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
-        # Send the log file if available
-        if log_file.exists():
-            with open(log_file, "r", encoding="utf-8") as f:
-                log_content = f.read()
+            # Send the log file if available
+            if log_file.exists():
+                with open(log_file, "r", encoding="utf-8") as f:
+                    log_content = f.read()
 
-            truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
-            send_telegram_message(
-                token=ALERT_BOT_TOKEN,
-                chat_id=ADMIN_CHAT_ID,
-                message=f"Node update timed out. Log file content:\n{truncated_log}"
-            )
-    except Exception as e:
-        error_msg = f"Exception occurred while updating node service: {e}"
-        self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
-
-        # Send the log file if available
-        if log_file.exists():
-            with open(log_file, "r", encoding="utf-8") as f:
-                log_content = f.read()
-
-            truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
-            send_telegram_message(
-                token=ALERT_BOT_TOKEN,
-                chat_id=ADMIN_CHAT_ID,
-                message=f"Exception during update. Log file content:\n{truncated_log}"
-            )
+                truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
+                send_telegram_message(
+                    token=ALERT_BOT_TOKEN,
+                    chat_id=ADMIN_CHAT_ID,
+                    message=f"Exception during update. Log file content:\n{truncated_log}"
+                )
 
     async def __execute_db_query(self, query, *params):
         conn = await asyncpg.connect(self.db_uri)
