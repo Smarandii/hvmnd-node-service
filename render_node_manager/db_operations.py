@@ -66,6 +66,8 @@ class DBOperations:
             await self.__update_password_and_notify_user(node)
         elif node['status'] == 'restarting':
             await self.__restart_node()
+        elif node['status'] == 'update_node_service':
+            await self.__update_node_service()
 
         logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
 
@@ -114,6 +116,21 @@ class DBOperations:
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
         except subprocess.CalledProcessError as e:
             error_msg = f"Failed to restart node: {e}"
+            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+
+    async def __update_node_service(self):
+        try:
+            command = ["cmd.exe", "/c", "update_node.bat"]
+            process = subprocess.run(command, capture_output=True, text=True)
+
+            if process.returncode == 0:
+                success_msg = f"Node service updated successfully:\n{process.stdout}"
+                self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
+            else:
+                error_msg = f"Failed to update node service. Error code: {process.returncode}\n{process.stderr}"
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+        except Exception as e:
+            error_msg = f"Exception occurred while updating node service: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
     async def __execute_db_query(self, query, *params):
