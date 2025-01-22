@@ -67,7 +67,7 @@ class DBOperations:
         elif node['status'] == 'restarting':
             await self.__restart_node()
         elif node['status'] == 'update_node_service':
-            await self.__update_node_service()
+            await self.__update_node_service(node)
 
         logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
 
@@ -118,7 +118,7 @@ class DBOperations:
             error_msg = f"Failed to restart node: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
-    async def __update_node_service(self):
+    async def __update_node_service(self, node):
         try:
             command = ["cmd.exe", "/c", "update_node_by_request.bat"]
             process = subprocess.run(command, capture_output=True, text=True)
@@ -128,7 +128,7 @@ class DBOperations:
                     f"Error code: {process.returncode}\n"
                     f"STDOUT: {process.stdout}\n"
                     f"STDERR: {process.stderr}"
-                )
+                ).encode('utf-8')
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
             if process.returncode == 0:
@@ -140,6 +140,10 @@ class DBOperations:
         except Exception as e:
             error_msg = f"Exception occurred while updating node service: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+
+            await self.__execute_db_query('''
+                            UPDATE nodes SET status = $1 WHERE machine_id = $2
+                        ''', 'available', self.machine_id)
 
     async def __execute_db_query(self, query, *params):
         conn = await asyncpg.connect(self.db_uri)
