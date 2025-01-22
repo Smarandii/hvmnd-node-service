@@ -143,7 +143,7 @@ class DBOperations:
 
             # Run the batch file
             command = ["cmd.exe", "/c", str(batch_file)]
-            process = subprocess.Popen(
+            process = subprocess.run(
                 command,
                 cwd=str(project_root),
                 stdout=subprocess.PIPE,
