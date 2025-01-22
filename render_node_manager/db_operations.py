@@ -122,36 +122,41 @@ class DBOperations:
 
     async def __update_node_service(self):
         try:
-            # TODO: Exit current dir `render_node_manager` to project root where update_node.bat located.
-            #  Run update_node.bat as admin
-            cwd = os.getcwd()
-            cwd = pathlib.Path(cwd)
-            cwd = cwd.parent.absolute()
+            # Determine the project root directory
+            current_dir = pathlib.Path(__file__).parent
+            project_root = current_dir.parent
 
-            command = ["cmd.exe", "/c", "update_node.bat"]
-            process = subprocess.run(command, capture_output=True, text=True, cwd=cwd)
-            if process.returncode != 0:
+            # Ensure the batch file exists in the project root
+            batch_file = project_root / "update_node.bat"
+            if not batch_file.exists():
+                error_msg = f"Batch file not found: {batch_file}"
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+                return
+
+            # Run the batch file
+            command = ["cmd.exe", "/c", str(batch_file)]
+            process = subprocess.run(command, capture_output=True, text=True, cwd=str(project_root), encoding="cp866")
+
+            # Check the process result
+            if process.returncode == 0:
+                success_msg = f"Node service updated successfully:\n{process.stdout}"
+                self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
+            else:
                 error_msg = (
                     f"Failed to update node service. "
                     f"Error code: {process.returncode}\n"
                     f"STDOUT: {process.stdout}\n"
                     f"STDERR: {process.stderr}"
-                ).encode('utf-8')
-                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
-
-            if process.returncode == 0:
-                success_msg = f"Node service updated successfully:\n{process.stdout}"
-                self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
-            else:
-                error_msg = f"Failed to update node service. Error code: {process.returncode}\n{process.stderr}"
+                )
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
         except Exception as e:
             error_msg = f"Exception occurred while updating node service: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
+            # Update node status to available in case of failure
             await self.__execute_db_query('''
-                        UPDATE nodes SET status = $1 WHERE machine_id = $2
-                    ''', 'available', self.machine_id)
+                UPDATE nodes SET status = $1 WHERE machine_id = $2
+            ''', 'available', self.machine_id)
 
     async def __execute_db_query(self, query, *params):
         conn = await asyncpg.connect(self.db_uri)
