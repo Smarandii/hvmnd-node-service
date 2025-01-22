@@ -4,6 +4,8 @@ setlocal
 :: Define log file
 set LOGFILE=update_node.log
 
+nssm stop render-node-service >> update_node.log 2>&1 || echo Failed to stop service! >> "%LOGFILE%" && exit /b 1
+
 :: Start logging
 echo Updating service... > "%LOGFILE%"
 
