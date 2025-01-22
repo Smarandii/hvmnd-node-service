@@ -141,61 +141,66 @@ class DBOperations:
 
             # Run the batch file
             command = ["cmd.exe", "/c", str(batch_file)]
-            process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(
+                command,
+                cwd=str(project_root),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
 
-            stdout, stderr = process.communicate(timeout=60) # 60 seconds is always enough to run update script
+            stdout, stderr = process.communicate(timeout=300)  # 5-minute timeout
+
+            # Check the process result
             if process.returncode == 0:
-                success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
+                success_msg = f"Node service updated successfully:\n{stdout}"
                 self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
             else:
                 error_msg = (
-                    f"Failed to update node service. "
-                    f"Error code: {process.returncode}\n"
-                    f"STDOUT: {stdout.decode('cp866')}\n"
-                    f"STDERR: {stderr.decode('cp866')}"
+                    f"Failed to update node service.\n"
+                    f"Return Code: {process.returncode}\n"
+                    f"STDOUT: {stdout}\n"
+                    f"STDERR: {stderr}"
                 )
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
-                # If an error occurred, send the log file via Telegram
+                # Send the log file via Telegram if it exists
                 if log_file.exists():
                     with open(log_file, "r", encoding="utf-8") as f:
                         log_content = f.read()
-
-                    truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
+                    truncated_log = log_content[-4000:]  # Telegram limit
                     send_telegram_message(
                         token=ALERT_BOT_TOKEN,
                         chat_id=ADMIN_CHAT_ID,
-                        message=f"Node update failed. Log file content:\n{truncated_log}"
+                        message=f"Node update failed. Log:\n{truncated_log}"
                     )
         except subprocess.TimeoutExpired:
             error_msg = "Node service update timed out."
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
-            # Send the log file if available
+            # Send log file content if available
             if log_file.exists():
                 with open(log_file, "r", encoding="utf-8") as f:
                     log_content = f.read()
-
-                truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
+                truncated_log = log_content[-4000:]
                 send_telegram_message(
                     token=ALERT_BOT_TOKEN,
                     chat_id=ADMIN_CHAT_ID,
-                    message=f"Node update timed out. Log file content:\n{truncated_log}"
+                    message=f"Update timed out. Log:\n{truncated_log}"
                 )
         except Exception as e:
-            error_msg = f"Exception occurred while updating node service: {e}"
+            error_msg = f"Exception during update: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
-            # Send the log file if available
+            # Send log file content if available
             if log_file.exists():
                 with open(log_file, "r", encoding="utf-8") as f:
                     log_content = f.read()
-
-                truncated_log = log_content[-4000:]  # Telegram message limit is 4096 chars
+                truncated_log = log_content[-4000:]
                 send_telegram_message(
                     token=ALERT_BOT_TOKEN,
                     chat_id=ADMIN_CHAT_ID,
-                    message=f"Exception during update. Log file content:\n{truncated_log}"
+                    message=f"Exception during update. Log:\n{truncated_log}"
                 )
 
     async def __execute_db_query(self, query, *params):

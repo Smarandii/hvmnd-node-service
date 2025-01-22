@@ -1,14 +1,40 @@
 @echo off
 setlocal
 
-echo Updating service... > update_node.log
+:: Define log file
+set LOGFILE=update_node.log
 
-git remote add origin-update "https://Smarandii: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@github.com/Smarandii/hvmnd-node-service.git"
-git pull origin-update master || echo Git pull failed! && exit /b 1
+:: Start logging
+echo Updating service... > "%LOGFILE%"
 
-echo Activating virtual environment and updating service... > update_node.log
-powershell -ExecutionPolicy Bypass -Command ". .\venv\Scripts\activate; python render_node_setup.py" || echo Service setup failed! > update_node.log && exit /b 1
+:: Pull latest code
+echo Pulling latest code... >> "%LOGFILE%"
+git remote add origin-update "https://Smarandii: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@github.com/Smarandii/hvmnd-node-service.git" >> "%LOGFILE%" 2>&1
+git pull origin-update master >> "%LOGFILE%" 2>&1
 
-echo Script completed successfully. > update_node.log
+if %ERRORLEVEL% NEQ 0 (
+    echo Git pull failed! >> "%LOGFILE%"
+    exit /b 1
+)
+
+:: Activate virtual environment
+echo Activating virtual environment... >> "%LOGFILE%"
+powershell -ExecutionPolicy Bypass -Command ". .\venv\Scripts\activate; echo Virtual environment activated >> %LOGFILE%" >> "%LOGFILE%" 2>&1
+
+if %ERRORLEVEL% NEQ 0 (
+    echo Virtual environment activation failed! >> "%LOGFILE%"
+    exit /b 1
+)
+
+:: Run service setup script
+echo Running service setup... >> "%LOGFILE%"
+powershell -ExecutionPolicy Bypass -Command "python render_node_setup.py >> %LOGFILE% 2>&1"
+if %ERRORLEVEL% NEQ 0 (
+    echo Service setup failed! >> "%LOGFILE%"
+    exit /b 1
+)
+
+:: Finish logging
+echo Script completed successfully. >> "%LOGFILE%"
 endlocal
 exit /b 0
