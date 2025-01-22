@@ -17,15 +17,6 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-:: Activate virtual environment
-echo Activating virtual environment... >> "%LOGFILE%"
-powershell -ExecutionPolicy Bypass -Command ". .\venv\Scripts\activate; echo Virtual environment activated >> %LOGFILE%" >> "%LOGFILE%" 2>&1
-
-if %ERRORLEVEL% NEQ 0 (
-    echo Virtual environment activation failed! >> "%LOGFILE%"
-    exit /b 1
-)
-
 :: Run Python script directly without activating the environment
 echo Running service setup... >> "%LOGFILE%"
 .\venv\Scripts\python.exe render_node_setup.py >> "%LOGFILE%" 2>&1
