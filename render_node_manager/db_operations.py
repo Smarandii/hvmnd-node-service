@@ -143,7 +143,7 @@ class DBOperations:
         command = ["cmd.exe", "/c", str(batch_file)]
         process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        stdout, stderr = process.communicate(timeout=300)  # Wait for 5 minutes
+        stdout, stderr = process.communicate(timeout=40)  # Wait for 5 minutes
         if process.returncode == 0:
             success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
             self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
