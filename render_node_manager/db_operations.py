@@ -19,7 +19,7 @@ class DBOperations:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v6.1.1'
+        self.node_service_version = 'v6.1.2'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
