@@ -69,7 +69,7 @@ if __name__ == '__main__':
     try:
         subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service', 'confirm'])
         print("waiting for service to be removed")
-        sleep(5)
+        sleep(10)
     except Exception as e:
         print("service is not installed...\nproceeding to installation...")
 
