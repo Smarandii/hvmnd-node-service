@@ -19,7 +19,7 @@ class DBOperations:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v6.1.5'
+        self.node_service_version = 'v6.1.6'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
@@ -149,7 +149,7 @@ class DBOperations:
                 universal_newlines=True
             )
 
-            stdout, stderr = process.communicate(timeout=300)  # 5-minute timeout
+            stdout, stderr = process.communicate(timeout=40)  # 5-minute timeout
 
             # Check the process result
             if process.returncode == 0:
