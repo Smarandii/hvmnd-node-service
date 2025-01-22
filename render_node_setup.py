@@ -14,6 +14,15 @@ NSSM_ZIP_URL = 'https://nssm.cc/release/nssm-2.24.zip'
 NSSM_ZIP_PATH = os.path.join(ROOT_DIR, 'nssm-2.24.zip')
 NSSM_EXTRACT_DIR = ROOT_DIR
 
+print(f"ROOT_DIR: {ROOT_DIR}")
+print(f"VENV_DIR: {VENV_DIR}")
+print(f"PYTHON_EXE: {PYTHON_EXE}")
+print(f"REQUIREMENTS_PATH: {REQUIREMENTS_PATH}")
+print(f"MAIN_PY_PATH: {MAIN_PY_PATH}")
+print(f"NSSM_ZIP_URL: {NSSM_ZIP_URL}")
+print(f"NSSM_ZIP_PATH: {NSSM_ZIP_PATH}")
+print(f"NSSM_EXTRACT_DIR: {NSSM_EXTRACT_DIR}")
+
 # Step 1: Create virtual environment
 print("Creating virtual environment...")
 try:

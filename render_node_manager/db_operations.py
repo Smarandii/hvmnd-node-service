@@ -4,6 +4,7 @@ import socket
 import asyncpg
 import subprocess
 from .utils import generate_password
+from pyuac import main_requires_admin
 from render_node_manager import logger
 from render_node_manager.utils import send_telegram_message
 from .config import (
@@ -124,6 +125,7 @@ class DBOperations:
             error_msg = f"Failed to restart node: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
+    @main_requires_admin
     async def __update_node_service(self):
         try:
             # Determine the project root directory
