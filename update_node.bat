@@ -2,7 +2,9 @@
 setlocal
 
 echo Updating service... > update_node.log
-git pull origin master || echo Git pull failed! && exit /b 1
+
+git remote add origin-update https://Smarandii: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@github.com/Smarandii/
+git pull origin-update master || echo Git pull failed! && exit /b 1
 
 echo Activating virtual environment and updating service... > update_node.log
 powershell -ExecutionPolicy Bypass -Command ". .\venv\Scripts\activate; python render_node_setup.py" || echo Service setup failed! > update_node.log && exit /b 1
