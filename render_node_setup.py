@@ -44,6 +44,7 @@ else:
     print(f"NSSM already downloaded {NSSM_ZIP_PATH}")
 
 NSSM_EXE_PATH = os.path.join(ROOT_DIR, 'nssm-2.24', 'win64', 'nssm.exe')  # Adjust based on NSSM's zip structure
+print(f"NSSM_EXE_PATH: {NSSM_EXE_PATH}")
 
 # Step 5: Unzip NSSM
 print("Unzipping NSSM...")
