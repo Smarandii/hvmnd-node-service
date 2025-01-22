@@ -71,7 +71,11 @@ class DBOperations:
         elif node['status'] == 'update_node_service':
             await self.__update_node_service()
 
-        logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
+        self._log(
+            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
+            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
+            log_level=logger.info)
+        # logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
 
     async def __update_password_and_notify_user(self, node):
         new_password = await self.__update_any_desk_password()
