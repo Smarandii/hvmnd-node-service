@@ -7,7 +7,6 @@ from render_node_manager import logger
 from render_node_manager.utils import send_telegram_message
 from .config import (
     PG_URL,
-    FRONTEND_BOT_TOKEN,
     ALERT_BOT_TOKEN,
     ADMIN_CHAT_ID,
     PATH_TO_PW_FILE,
@@ -75,7 +74,6 @@ class DBOperations:
         if node['renter']:
             user = await self.__fetch_db_row('SELECT telegram_id FROM users WHERE id = $1', node['renter'])
             if user:
-                telegram_id = user['telegram_id']
                 await self.__execute_db_query('''
                     UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
                 ''', new_password, 'occupied', self.machine_id)
@@ -86,13 +84,6 @@ class DBOperations:
                 ''', node['renter'],
                       f"Node awaits you.\nAnyDesk address: {node['any_desk_address']}\nAnyDesk password: {new_password}",
                       f"AnyDesk адрес: `{node['any_desk_address']}`\nAnyDesk пароль: `{new_password}`")
-
-                # send_telegram_message(
-                #     token=FRONTEND_BOT_TOKEN,
-                #     chat_id=telegram_id,
-                #     message=f"AnyDesk адрес: `{node['any_desk_address']}`\nAnyDesk пароль: `{new_password}`",
-                #     parse_mode='MarkdownV2'
-                # )
         else:
             await self.__execute_db_query('''
                 UPDATE nodes SET any_desk_password = $1, status = $2 WHERE machine_id = $3
