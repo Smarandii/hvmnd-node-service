@@ -19,7 +19,7 @@ class DBOperations:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v6.0.0'
+        self.node_service_version = 'v6.1.0'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
@@ -27,9 +27,9 @@ class DBOperations:
         send_telegram_message(
             token=ALERT_BOT_TOKEN,
             chat_id=ADMIN_CHAT_ID,
-            message=alert_message
+            message=f"{self.node_service_version} - {alert_message}"
         )
-        log_level(log_message)
+        log_level(f"{self.node_service_version} - {log_message}")
 
     async def startup_node(self):
         node = await self.__fetch_db_row('SELECT * FROM nodes WHERE machine_id = $1', self.machine_id)
