@@ -64,18 +64,17 @@ class DBOperations:
                 time.sleep(5)
 
     async def __handle_node_status_change(self, node, old_status):
+        self._log(
+            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
+            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
+            log_level=logger.info)
+
         if node['status'] == 'need_to_update_password':
             await self.__update_password_and_notify_user(node)
         elif node['status'] == 'restarting':
             await self.__restart_node()
         elif node['status'] == 'update_node_service':
             await self.__update_node_service()
-
-        self._log(
-            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
-            f"Node {node['old_id']} shifted from {old_status} to {node['status']}",
-            log_level=logger.info)
-        # logger.info(f"Node {node['old_id']} shifted from {old_status} to {node['status']}")
 
     async def __update_password_and_notify_user(self, node):
         new_password = await self.__update_any_desk_password()
@@ -129,7 +128,10 @@ class DBOperations:
             # Determine the project root directory
             current_dir = pathlib.Path(__file__).parent
             project_root = current_dir.parent
-
+            self._log(
+                f"Node {project_root} {current_dir}",
+                f"Node {project_root} {current_dir}",
+                log_level=logger.info)
             # Ensure the batch file exists in the project root
             batch_file = project_root / "update_node.bat"
             if not batch_file.exists():
@@ -137,6 +139,10 @@ class DBOperations:
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
                 return
 
+            self._log(
+                f"Run the batch file {batch_file} in cwd={str(project_root)}",
+                f"Run the batch file {batch_file} in cwd={str(project_root)}",
+                log_level=logger.info)
             # Run the batch file
             command = ["cmd.exe", "/c", str(batch_file)]
             process = subprocess.run(command, capture_output=True, text=True, cwd=str(project_root), encoding="cp866")
