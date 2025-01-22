@@ -19,7 +19,7 @@ class DBOperations:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v6.1.3'
+        self.node_service_version = 'v6.1.4'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
@@ -143,7 +143,7 @@ class DBOperations:
             command = ["cmd.exe", "/c", str(batch_file)]
             process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-            stdout, stderr = process.communicate(timeout=40)  # Wait for 5 minutes
+            stdout, stderr = process.communicate(timeout=60) # 60 seconds is always enough to run update script
             if process.returncode == 0:
                 success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
                 self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
