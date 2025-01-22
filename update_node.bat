@@ -26,9 +26,9 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-:: Run service setup script
+:: Run Python script directly without activating the environment
 echo Running service setup... >> "%LOGFILE%"
-powershell -ExecutionPolicy Bypass -Command "python render_node_setup.py >> %LOGFILE% 2>&1"
+.\venv\Scripts\python.exe render_node_setup.py >> "%LOGFILE%" 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo Service setup failed! >> "%LOGFILE%"
     exit /b 1
