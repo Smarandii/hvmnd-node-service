@@ -4,6 +4,9 @@ setlocal
 :: Define log file
 set LOGFILE=update_node.log
 
+echo Running under user: %USERNAME% >> "%LOGFILE%"
+whoami >> "%LOGFILE%"
+
 :: Start logging
 echo Updating service... > "%LOGFILE%"
 
@@ -15,6 +18,8 @@ if %ERRORLEVEL% NEQ 0 (
     echo "Service stop command failed, attempting taskkill..." >> "%LOGFILE%"
     for /f "tokens=2 delims= " %%i in ('tasklist /fi "imagename eq python.exe" /fi "services eq render-node-service"') do taskkill /pid %%i /f >> "%LOGFILE%" 2>&1
 )
+
+echo "TEST..." >> "%LOGFILE%"
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to stop service! >> "%LOGFILE%"
