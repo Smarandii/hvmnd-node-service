@@ -1,4 +1,3 @@
-import os
 import pathlib
 import time
 import socket
@@ -20,7 +19,8 @@ class DBOperations:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        logger.info(f"{self.machine_id} Node initialized")
+        self.node_service_version = 'v6.0.0'
+        logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
     def _log(self, alert_message, log_message, log_level):
@@ -75,6 +75,7 @@ class DBOperations:
             await self.__restart_node()
         elif node['status'] == 'update_node_service':
             await self.__update_node_service()
+            await self.__update_password_and_notify_user(node)
 
     async def __update_password_and_notify_user(self, node):
         new_password = await self.__update_any_desk_password()
@@ -158,14 +159,10 @@ class DBOperations:
         except subprocess.TimeoutExpired:
             error_msg = "Node service update timed out."
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+
         except Exception as e:
             error_msg = f"Exception occurred while updating node service: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
-
-            # Update node status to available in case of failure
-            await self.__execute_db_query('''
-                UPDATE nodes SET status = $1 WHERE machine_id = $2
-            ''', 'available', self.machine_id)
 
     async def __execute_db_query(self, query, *params):
         conn = await asyncpg.connect(self.db_uri)
