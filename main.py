@@ -26,7 +26,7 @@ def main():
         with zipfile.ZipFile(NSSM_ZIP_PATH, 'r') as zip_ref:
             zip_ref.extractall(NSSM_EXTRACT_DIR)
     else:
-    print(f"NSSM already unzipped and ready to use {NSSM_EXE_PATH}")
+        print(f"NSSM already unzipped and ready to use {NSSM_EXE_PATH}")
     add_to_system_path("C:\\Program Files (x86)\\AnyDesk")
     add_to_system_path(str(NSSM_EXE_FOLDER_PATH))
 
