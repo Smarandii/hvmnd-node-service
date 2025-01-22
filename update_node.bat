@@ -7,12 +7,20 @@ set LOGFILE=update_node.log
 :: Start logging
 echo Updating service... > "%LOGFILE%"
 
-:: Stop the Windows service
 echo Stopping render-node-service... >> "%LOGFILE%"
+
+:: Try stopping the service
 sc stop render-node-service >> "%LOGFILE%" 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo "Service stop command failed, attempting taskkill..." >> "%LOGFILE%"
+    for /f "tokens=2 delims= " %%i in ('tasklist /fi "imagename eq python.exe" /fi "services eq render-node-service"') do taskkill /pid %%i /f >> "%LOGFILE%" 2>&1
+)
+
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to stop service! >> "%LOGFILE%"
 )
+
+echo Service stopped successfully. >> "%LOGFILE%"
 
 :: Pull latest code
 echo Pulling latest code... >> "%LOGFILE%"
