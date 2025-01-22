@@ -128,10 +128,7 @@ class DBOperations:
             # Determine the project root directory
             current_dir = pathlib.Path(__file__).parent
             project_root = current_dir.parent
-            self._log(
-                f"Node {project_root} {current_dir}",
-                f"Node {project_root} {current_dir}",
-                log_level=logger.info)
+
             # Ensure the batch file exists in the project root
             batch_file = project_root / "update_node.bat"
             if not batch_file.exists():
@@ -139,26 +136,28 @@ class DBOperations:
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
                 return
 
-            self._log(
-                f"Run the batch file {batch_file} in cwd={str(project_root)}",
-                f"Run the batch file {batch_file} in cwd={str(project_root)}",
-                log_level=logger.info)
-            # Run the batch file
+            # Run the batch file asynchronously
             command = ["cmd.exe", "/c", str(batch_file)]
-            process = subprocess.run(command, capture_output=True, text=True, cwd=str(project_root), encoding="cp866")
+            process = subprocess.Popen(command, cwd=str(project_root), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-            # Check the process result
+            # Allow the batch file to run while keeping the service responsive
+            stdout, stderr = process.communicate(timeout=300)  # Adjust timeout as needed
+
+            # Log the result
             if process.returncode == 0:
-                success_msg = f"Node service updated successfully:\n{process.stdout}"
+                success_msg = f"Node service updated successfully:\n{stdout.decode('cp866')}"
                 self._log(alert_message=success_msg, log_message=success_msg, log_level=logger.info)
             else:
                 error_msg = (
                     f"Failed to update node service. "
                     f"Error code: {process.returncode}\n"
-                    f"STDOUT: {process.stdout}\n"
-                    f"STDERR: {process.stderr}"
+                    f"STDOUT: {stdout.decode('cp866')}\n"
+                    f"STDERR: {stderr.decode('cp866')}"
                 )
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
+        except subprocess.TimeoutExpired:
+            error_msg = "Node service update timed out."
+            self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
         except Exception as e:
             error_msg = f"Exception occurred while updating node service: {e}"
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
