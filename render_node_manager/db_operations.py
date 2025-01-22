@@ -120,8 +120,16 @@ class DBOperations:
 
     async def __update_node_service(self):
         try:
-            command = ["cmd.exe", "/c", "update_node.bat"]
+            command = ["cmd.exe", "/c", "update_node_by_request.bat"]
             process = subprocess.run(command, capture_output=True, text=True)
+            if process.returncode != 0:
+                error_msg = (
+                    f"Failed to update node service. "
+                    f"Error code: {process.returncode}\n"
+                    f"STDOUT: {process.stdout}\n"
+                    f"STDERR: {process.stderr}"
+                )
+                self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
 
             if process.returncode == 0:
                 success_msg = f"Node service updated successfully:\n{process.stdout}"
