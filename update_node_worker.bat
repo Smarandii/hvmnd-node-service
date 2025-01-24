@@ -5,8 +5,8 @@ setlocal
 set LOGFILE=update_node.log
 
 :: Make admin the owner
-takeown /F "%APPDATA%\render_hive_farm_bot_node_service" /A /R
-icacls "%APPDATA%\render_hive_farm_bot_node_service" /inheritance:r /grant:r *S-1-5-32-544:(F) *S-1-5-18:(F) /remove:d *S-1-1-0 /T
+takeown /F "%APPDATA%\hvmnd-node-service" /A /R
+icacls "%APPDATA%\hvmnd-node-service" /inheritance:r /grant:r *S-1-5-32-544:(F) *S-1-5-18:(F) /remove:d *S-1-1-0 /T
 
 :: Start logging
 echo Updating service... > "%LOGFILE%"
