@@ -2,7 +2,7 @@ import string
 import random
 import requests
 import winreg as reg
-from render_node_manager import logger
+from hvmnd_node_service_manager import logger
 
 
 def generate_password(length=12):

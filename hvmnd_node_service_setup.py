@@ -60,28 +60,28 @@ if __name__ == '__main__':
     print("Setting up NSSM service...")
 
     try:
-        subprocess.check_call([NSSM_EXE_PATH, 'stop', 'render-node-service'])
+        subprocess.check_call([NSSM_EXE_PATH, 'stop', 'hvmnd-node-service'])
         print("stopping service...")
         sleep(5)
     except Exception as e:
         print("service is not stopped...\nproceeding to removing...")
 
     try:
-        subprocess.check_call([NSSM_EXE_PATH, 'remove', 'render-node-service', 'confirm'])
+        subprocess.check_call([NSSM_EXE_PATH, 'remove', 'hvmnd-node-service', 'confirm'])
         print("waiting for service to be removed")
         sleep(10)
     except Exception as e:
         print("service is not installed...\nproceeding to installation...")
 
     try:
-        subprocess.check_call([NSSM_EXE_PATH, 'install', 'render-node-service', PYTHON_EXE, MAIN_PY_PATH])
+        subprocess.check_call([NSSM_EXE_PATH, 'install', 'hvmnd-node-service', PYTHON_EXE, MAIN_PY_PATH])
     except Exception as e:
-        print("render-node-service already installed")
+        print("hvmnd-node-service already installed")
 
     try:
-        subprocess.check_call([NSSM_EXE_PATH, 'start', 'render-node-service'])
+        subprocess.check_call([NSSM_EXE_PATH, 'start', 'hvmnd-node-service'])
     except Exception as e:
-        print("render-node-service already started")
+        print("hvmnd-node-service already started")
 
 
     print("Setup completed successfully.")

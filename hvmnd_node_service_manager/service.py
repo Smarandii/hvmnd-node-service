@@ -5,8 +5,8 @@ import asyncpg
 import subprocess
 from .utils import generate_password
 from pyuac import main_requires_admin
-from render_node_manager import logger
-from render_node_manager.utils import send_telegram_message
+from hvmnd_node_service_manager import logger
+from hvmnd_node_service_manager.utils import send_telegram_message
 from .config import (
     PG_URL,
     ALERT_BOT_TOKEN,
@@ -16,11 +16,11 @@ from .config import (
 )
 
 
-class DBOperations:
+class HVMNDNodeService:
     def __init__(self):
         self.db_uri = PG_URL
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v7.0.4'
+        self.node_service_version = 'v8.0.0'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID, message=f"{self.machine_id} Node initialized")
 
@@ -133,7 +133,7 @@ class DBOperations:
             project_root = current_dir.parent
 
             # Ensure the batch file exists in the project root
-            batch_file = project_root / "update_node.bat"
+            batch_file = project_root / "hvmnd_node_service_update.bat"
             log_file = project_root / "update_node.log"
 
             if not batch_file.exists():
