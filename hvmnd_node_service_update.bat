@@ -8,5 +8,5 @@ echo Running under user: %USERNAME% >> "%LOGFILE%"
 whoami >> "%LOGFILE%"
 
 :: Start a new detached process for the actual script
-start "" cmd.exe /c "update_node_worker.bat"
+start "" cmd.exe /c "hvmnd_node_service_update_worker.bat"
 exit /b
