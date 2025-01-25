@@ -11,12 +11,12 @@ icacls "%APPDATA%\hvmnd-node-service" /inheritance:r /grant:r *S-1-5-32-544:(F) 
 :: Start logging
 echo Updating service... > "%LOGFILE%"
 
-echo Stopping render-node-service... >> "%LOGFILE%"
+echo Stopping hvmnd-node-service... >> "%LOGFILE%"
 
 :: Stop the service
-sc stop render-node-service >> "%LOGFILE%" 2>&1
+sc stop hvmnd-node-service >> "%LOGFILE%" 2>&1
 timeout /t 5 >nul
-sc query render-node-service | findstr /i "STOPPED" >nul 2>&1
+sc query hvmnd-node-service | findstr /i "STOPPED" >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo "Service did not stop successfully!" >> "%LOGFILE%"
     exit /b 1
