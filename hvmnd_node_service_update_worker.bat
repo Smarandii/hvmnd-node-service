@@ -36,7 +36,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 :: Run Python script directly
 echo Running service setup... >> "%LOGFILE%"
-.\venv\Scripts\python.exe render_node_setup.py >> "%LOGFILE%" 2>&1
+.\venv\Scripts\python.exe hvmnd_node_service_setup.py >> "%LOGFILE%" 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo Service setup failed! >> "%LOGFILE%"
     exit /b 1
