@@ -1,5 +1,4 @@
 # coding=utf-8
-import os
 import asyncio
 from pyuac import main_requires_admin
 from hvmnd_node_service_manager.service import HVMNDNodeService
@@ -11,7 +10,7 @@ def main():
     add_to_system_path("C:\\Program Files (x86)\\AnyDesk")
 
     hvmnd_node_service = HVMNDNodeService()
-    asyncio.run(hvmnd_node_service.startup_node())
+    hvmnd_node_service.startup_node()
     asyncio.run(hvmnd_node_service.poll_node_status())
 
 
