@@ -22,7 +22,7 @@ class HVMNDNodeService:
     def __init__(self):
         self.hac = APIClient(base_url=HVMND_API_CLIENT_BASE_URL, api_token=HVMND_API_TOKEN)
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v9.0.0'
+        self.node_service_version = 'v9.0.1'
         logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
         send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID,
                               message=f"{self.machine_id} Node initialized")
