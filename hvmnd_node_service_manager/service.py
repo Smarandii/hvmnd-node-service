@@ -12,7 +12,9 @@ from .config import (
     ALERT_BOT_TOKEN,
     ADMIN_CHAT_ID,
     PATH_TO_PW_FILE,
-    UPDATE_PW_POWERSHELL_COMMAND, PATH_TO_ANY_DESK
+    UPDATE_PW_POWERSHELL_COMMAND,
+    PATH_TO_ANY_DESK,
+    RESTARTING_DISABLED
 )
 
 
@@ -48,6 +50,7 @@ class HVMNDNodeService:
             node = node_api_response['data'][0]
             node['any_desk_address'] = any_desk_address
             node['any_desk_password'] = any_desk_password
+            node['status'] = 'available' if not node['renter'] else None
             self.hac.update_node(node)
             return
 
@@ -119,7 +122,7 @@ class HVMNDNodeService:
 
         node['machine_id'] = self.machine_id
         node['any_desk_password'] = new_password
-        node['status'] = 'available'
+        node['status'] = 'available' if not node['renter'] else None
         self.hac.update_node(node)
 
         self._log(
@@ -194,7 +197,7 @@ class HVMNDNodeService:
             platform = 'webapp'
             rent_session = web_app_rent_session_response['data'][0]
             user_api_response = self.hac.get_users(
-                id_=rent_session['renter']['id'],
+                id_=rent_session['renter'],
                 platform=platform
             )
             if user_api_response['success']:
@@ -207,7 +210,7 @@ class HVMNDNodeService:
             platform = 'telegram'
             rent_session = telegram_rent_session_response['data'][0]
             user_api_response = self.hac.get_users(
-                id_=rent_session['renter']['id'],
+                id_=rent_session['renter'],
                 platform=platform
             )
             if user_api_response['success']:
@@ -270,6 +273,15 @@ class HVMNDNodeService:
             self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.info)
 
     def __restart_node(self):
+        if RESTARTING_DISABLED:
+            self._log(
+                alert_message=f"{self.machine_id} RESTART WAS CALLED",
+                log_message=f"{self.machine_id} RESTART WAS CALLED",
+                log_level=logger.info
+            )
+            self.initialize_new_node()
+            self.startup_node()
+
         try:
             command = ["powershell.exe", "-Command", "Restart-Computer -Force"]
             process = subprocess.run(command)
