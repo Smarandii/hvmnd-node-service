@@ -42,21 +42,21 @@ class HVMNDNodeService:
 
     def initialize_new_node(self):
         any_desk_address = self.__get_any_desk_address()
-        # any_desk_password = self.__update_any_desk_password()
 
         node_api_response = self.hac.get_nodes(machine_id=self.machine_id)
         if node_api_response['success']:
             # Node already exists
             node = node_api_response['data'][0]
             node['any_desk_address'] = any_desk_address
-            # node['any_desk_password'] = any_desk_password
             node['status'] = 'available' if not node['renter'] else None
             self.hac.update_node(node)
             return True
 
+        any_desk_password = self.__update_any_desk_password()
+
         create_node_api_response = self.hac.create_node(
             any_desk_address=any_desk_address,
-            # any_desk_password=any_desk_password,
+            any_desk_password=any_desk_password,
             status='just_created',
             machine_id=self.machine_id
         )
@@ -172,6 +172,7 @@ class HVMNDNodeService:
         if node['status'] == 'need_to_update_password':
             self.__update_password_and_notify_user(node)
         elif node['status'] == 'restarting':
+            self.__update_any_desk_password()
             self.__restart_node()
         elif node['status'] == 'update_node_service':
             self.__update_node_service()
