@@ -179,6 +179,8 @@ class HVMNDNodeService:
             self.__update_password_and_notify_user(node)
         elif node['status'] == 'restarting':
             self.__update_any_desk_password()
+            node['any_desk_password'] = self.current_any_desk_password
+            self.hac.update_node(node)
             self.__restart_node()
         elif node['status'] == 'update_node_service':
             self.__update_node_service()
