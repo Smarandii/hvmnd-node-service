@@ -109,10 +109,9 @@ class HVMNDNodeService:
 
             node = node_api_response['data'][0]
 
-            # new_password = self.__update_any_desk_password()
-
             node['machine_id'] = self.machine_id
-            # node['any_desk_password'] = new_password
+            if self.current_any_desk_password:
+                node['any_desk_password'] = self.current_any_desk_password
             if node['status'] == 'restarting' and not node['renter']:
                 node['status'] = 'available'
             if node['status'] == 'restarting' and node['renter']:
@@ -265,6 +264,7 @@ class HVMNDNodeService:
 
     def __update_any_desk_password(self):
         new_password = generate_password()
+        self.current_any_desk_password = new_password
         with open(PATH_TO_PW_FILE, "w") as pwd_file:
             pwd_file.write(new_password)
         try:
