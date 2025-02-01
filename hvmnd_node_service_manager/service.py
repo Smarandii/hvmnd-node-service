@@ -42,21 +42,21 @@ class HVMNDNodeService:
 
     def initialize_new_node(self):
         any_desk_address = self.__get_any_desk_address()
-        any_desk_password = self.__update_any_desk_password()
+        # any_desk_password = self.__update_any_desk_password()
 
         node_api_response = self.hac.get_nodes(machine_id=self.machine_id)
         if node_api_response['success']:
             # Node already exists
             node = node_api_response['data'][0]
             node['any_desk_address'] = any_desk_address
-            node['any_desk_password'] = any_desk_password
+            # node['any_desk_password'] = any_desk_password
             node['status'] = 'available' if not node['renter'] else None
             self.hac.update_node(node)
-            return
+            return True
 
         create_node_api_response = self.hac.create_node(
             any_desk_address=any_desk_address,
-            any_desk_password=any_desk_password,
+            # any_desk_password=any_desk_password,
             status='just_created',
             machine_id=self.machine_id
         )
@@ -85,6 +85,44 @@ class HVMNDNodeService:
         """
         try:
             node_api_response = self.hac.get_nodes(machine_id=self.machine_id)
+
+            if not node_api_response['success']:
+                self._log(
+                    alert_message=f"Failed to startup node with machine_id: {self.machine_id}. "
+                                  f"{node_api_response['error']}",
+                    log_message=f"Failed to startup node with machine_id: {self.machine_id}. "
+                                f"{node_api_response['error']}",
+                    log_level=logger.info
+                )
+
+                self.startup_node()
+
+            if len(node_api_response['data']) > 1:
+                self._log(
+                    alert_message=f"Multiple nodes with same machine_id: {self.machine_id}."
+                                  f"{node_api_response['data']}",
+                    log_message=f"Multiple nodes with same machine_id: {self.machine_id}."
+                                f"{node_api_response['data']}",
+                    log_level=logger.info
+                )
+                return
+
+            node = node_api_response['data'][0]
+
+            # new_password = self.__update_any_desk_password()
+
+            node['machine_id'] = self.machine_id
+            # node['any_desk_password'] = new_password
+            node['status'] = 'available' if not node['renter'] else None
+            self.hac.update_node(node)
+
+            self._log(
+                alert_message=f"{HVMNDNodeService._generate_node_info_string(node)} "
+                              f"startup node completed successfully...",
+                log_message=f"{HVMNDNodeService._generate_node_info_string(node)} "
+                            f"startup node completed successfully...",
+                log_level=logger.info
+            )
         except Exception as e:
             self._log(
                 alert_message=f"Failed to startup node with machine_id: {self.machine_id}."
@@ -94,44 +132,6 @@ class HVMNDNodeService:
                 log_level=logger.info
             )
             return False
-
-        if not node_api_response['success']:
-            self._log(
-                alert_message=f"Failed to startup node with machine_id: {self.machine_id}. "
-                              f"{node_api_response['error']}",
-                log_message=f"Failed to startup node with machine_id: {self.machine_id}. "
-                            f"{node_api_response['error']}",
-                log_level=logger.info
-            )
-
-            self.startup_node()
-
-        if len(node_api_response['data']) > 1:
-            self._log(
-                alert_message=f"Multiple nodes with same machine_id: {self.machine_id}."
-                              f"{node_api_response['data']}",
-                log_message=f"Multiple nodes with same machine_id: {self.machine_id}."
-                            f"{node_api_response['data']}",
-                log_level=logger.info
-            )
-            return
-
-        node = node_api_response['data'][0]
-
-        new_password = self.__update_any_desk_password()
-
-        node['machine_id'] = self.machine_id
-        node['any_desk_password'] = new_password
-        node['status'] = 'available' if not node['renter'] else None
-        self.hac.update_node(node)
-
-        self._log(
-            alert_message=f"{HVMNDNodeService._generate_node_info_string(node)} "
-                          f"Node is available - {new_password}",
-            log_message=f"{HVMNDNodeService._generate_node_info_string(node)} "
-                        f"Node is available...",
-            log_level=logger.info
-        )
 
     def poll_node_status(self):
         old_status = None
@@ -267,6 +267,11 @@ class HVMNDNodeService:
                 error_msg = f"Failed to update password: {process.stderr}"
                 self._log(alert_message=error_msg, log_message=error_msg, log_level=logger.error)
                 return ''
+            self._log(
+                alert_message=f"{self.machine_id} - new password: {new_password}",
+                log_message=f"{self.machine_id} - new password!",
+                log_level=logger.info
+            )
             return new_password
         except subprocess.CalledProcessError as e:
             error_msg = f"{self.machine_id} Failed to update password: {e}"
