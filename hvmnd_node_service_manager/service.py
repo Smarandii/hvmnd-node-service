@@ -113,7 +113,13 @@ class HVMNDNodeService:
 
             node['machine_id'] = self.machine_id
             # node['any_desk_password'] = new_password
-            node['status'] = 'available' if not node['renter'] else None
+            if node['status'] == 'restarting' and not node['renter']:
+                node['status'] = 'available'
+            if node['status'] == 'restarting' and node['renter']:
+                node['status'] = 'occupied'
+            else:
+                pass
+
             self.hac.update_node(node)
 
             self._log(
