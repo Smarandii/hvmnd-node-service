@@ -49,7 +49,7 @@ class HVMNDNodeService:
             # Node already exists
             node = node_api_response['data'][0]
             node['any_desk_address'] = any_desk_address
-            node['status'] = 'available' if not node['renter'] else None
+            node['status'] = 'available' if not node['status'] == 'occupied' else None
             self.hac.update_node(node)
             return True
 
@@ -113,9 +113,9 @@ class HVMNDNodeService:
             node['machine_id'] = self.machine_id
             if self.current_any_desk_password:
                 node['any_desk_password'] = self.current_any_desk_password
-            if node['status'] == 'restarting' and not node['renter']:
+            if node['status'] == 'restarting' and not node['status'] == 'occupied':
                 node['status'] = 'available'
-            if node['status'] == 'restarting' and node['renter']:
+            if node['status'] == 'restarting' and node['status'] == 'occupied':
                 node['status'] = 'occupied'
             else:
                 pass
