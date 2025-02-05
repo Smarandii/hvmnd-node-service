@@ -22,7 +22,7 @@ class HVMNDNodeService:
     def __init__(self):
         self.hac = APIClient(base_url=HVMND_API_CLIENT_BASE_URL, api_token=HVMND_API_TOKEN)
         self.machine_id = socket.gethostname()
-        self.node_service_version = 'v9.0.1'
+        self.node_service_version = 'v10.0.1'
         self.current_any_desk_password = None
         self._log(
             log_message=f"{self.machine_id} Node initialized {self.node_service_version}",
