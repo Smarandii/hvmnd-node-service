@@ -24,9 +24,11 @@ class HVMNDNodeService:
         self.machine_id = socket.gethostname()
         self.node_service_version = 'v9.0.1'
         self.current_any_desk_password = None
-        logger.info(f"{self.machine_id} Node initialized {self.node_service_version}")
-        send_telegram_message(token=ALERT_BOT_TOKEN, chat_id=ADMIN_CHAT_ID,
-                              message=f"{self.machine_id} Node initialized")
+        self._log(
+            log_message=f"{self.machine_id} Node initialized {self.node_service_version}",
+            alert_message=f"{self.machine_id} Node initialized {self.node_service_version}",
+            log_level=logger.info
+        )
         self.initialize_new_node()
 
     def _log(self, alert_message, log_message, log_level):
