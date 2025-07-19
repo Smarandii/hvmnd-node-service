@@ -12,7 +12,7 @@ UPDATE_PW_POWERSHELL_COMMAND = f"""
 $newPassword = Get-Content "{PATH_TO_PW_FILE}"
 echo $newPassword | anydesk --set-password;
 Start-Sleep -Seconds 1;
-$serviceName="AnyDesk";
+$serviceName="AnyDesk Service";
 if((Get-Service -Name $serviceName).Status -eq "Running")
 {{Restart-Service -Name $serviceName;}};
 echo "Success"
